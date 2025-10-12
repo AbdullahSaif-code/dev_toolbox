@@ -122,3 +122,15 @@ def system_snap_refresh():
     results = {"snap refresh": msg}
     logs = [log]
     return render_template('status.html', results=results, logs=logs, gemini_analysis="")
+
+@main.route('/system/one-click-upgrade', methods=['POST'])
+def system_one_click_upgrade():
+    results_map, combined_log = system_checks.one_click_upgrade()
+    return render_template('status.html', results=results_map, logs=[combined_log], gemini_analysis="")
+
+@main.route('/system/release-upgrade', methods=['POST'])
+def system_release_upgrade():
+    msg, log = system_checks.do_release_upgrade()
+    results = {"do-release-upgrade": msg}
+    logs = [log]
+    return render_template('status.html', results=results, logs=logs, gemini_analysis="")

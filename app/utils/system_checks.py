@@ -99,3 +99,45 @@ def snap_refresh() -> tuple[str, str]:
         return ("snap not installed.", "snap command not found")
     except Exception as e:
         return ("snap refresh error.", str(e))
+
+def one_click_upgrade() -> tuple[dict, str]:
+    """Run apt update, apt full-upgrade -y, and snap refresh in sequence. Returns (results, combined_log)."""
+    results: dict = {}
+    logs: list[str] = []
+    # apt update
+    try:
+        code, log = _run_collect(["pkexec", "/usr/bin/apt", "update"])
+        logs.append(log)
+        results["apt update"] = "completed" if code == 0 else "failed"
+    except Exception as e:
+        results["apt update"] = "error"
+        logs.append(str(e))
+    # apt full-upgrade
+    try:
+        code, log = _run_collect(["pkexec", "/usr/bin/apt", "full-upgrade", "-y"])
+        logs.append(log)
+        results["apt full-upgrade"] = "completed" if code == 0 else "failed"
+    except Exception as e:
+        results["apt full-upgrade"] = "error"
+        logs.append(str(e))
+    # snap refresh
+    try:
+        code, log = _run_collect(["pkexec", "/usr/bin/snap", "refresh"])
+        logs.append(log)
+        results["snap refresh"] = "completed" if code == 0 else "failed"
+    except Exception as e:
+        results["snap refresh"] = "error"
+        logs.append(str(e))
+    return results, "\n\n".join(logs)
+
+def do_release_upgrade() -> tuple[str, str]:
+    """Attempt a distribution release upgrade non-interactively. Returns (message, log)."""
+    try:
+        code, log = _run_collect(["pkexec", "/usr/bin/do-release-upgrade", "-f", "DistUpgradeViewNonInteractive", "-y"])
+        if code == 0:
+            return ("release upgrade initiated/completed.", log)
+        return ("release upgrade failed.", log)
+    except FileNotFoundError:
+        return ("do-release-upgrade not found.", "install ubuntu-release-upgrader-core")
+    except Exception as e:
+        return ("release upgrade error.", str(e))
