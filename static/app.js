@@ -28,4 +28,26 @@
     });
   };
   Array.from(document.querySelectorAll('form')).forEach(attach);
+
+  // Auto-trigger admin authentication once per session
+  async function autoElevateOnce(){
+    try {
+      if (sessionStorage.getItem('pkexecElevated') === 'true') return;
+      if (overlay){
+        overlay.classList.remove('hidden');
+        overlay.setAttribute('aria-hidden','false');
+      }
+      await fetch('/auth/elevate', { method: 'POST', credentials: 'same-origin' });
+      sessionStorage.setItem('pkexecElevated', 'true');
+    } catch (e) {
+      // ignore; user can manually authenticate later
+    } finally {
+      if (overlay){
+        overlay.classList.add('hidden');
+        overlay.setAttribute('aria-hidden','true');
+      }
+    }
+  }
+  // Kick off shortly after load to allow UI paint
+  window.addEventListener('load', ()=> setTimeout(autoElevateOnce, 300));
 })();
