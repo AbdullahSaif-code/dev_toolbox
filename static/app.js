@@ -10,7 +10,13 @@
   function open(){ if(modal){ modal.classList.remove('hidden'); modal.setAttribute('aria-hidden','false'); } }
   function close(){ if(modal){ modal.classList.add('hidden'); modal.setAttribute('aria-hidden','true'); } }
 
-  if (!configured) { open(); }
+  // Auto-open once per browser session if not configured
+  try {
+    if (!configured && !sessionStorage.getItem('geminiPrompted')) {
+      open();
+      sessionStorage.setItem('geminiPrompted', 'true');
+    }
+  } catch (_) { /* ignore storage errors */ }
   if (openBtn) openBtn.addEventListener('click', open);
   if (closeBtn) closeBtn.addEventListener('click', close);
   if (modal) {

@@ -88,13 +88,28 @@
         class="card"
       >
         <h2>Select tools to install</h2>
-        <div style="display:flex; gap:8px; align-items:center; margin:6px 0 10px 0;">
-          <input id="toolFilter" class="input" placeholder="Filter tools..." style="max-width:280px;" />
-          <button type="button" id="selectAll" class="secondary">Select All</button>
-          <button type="button" id="clearAll" class="secondary">Clear All</button>
+        <div
+          style="
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            margin: 6px 0 10px 0;
+          "
+        >
+          <input
+            id="toolFilter"
+            class="input"
+            placeholder="Filter tools..."
+            style="max-width: 280px"
+          />
+          <button type="button" id="selectAll" class="secondary">
+            Select All
+          </button>
+          <button type="button" id="clearAll" class="secondary">
+            Clear All
+          </button>
         </div>
-        {% if categories %}
-        {% for cat, tools in categories.items() %}
+        {% if categories %} {% for cat, tools in categories.items() %}
         <h3 style="margin: 12px 0 8px 4px; color: #93c5fd">{{ cat }}</h3>
         <div class="grid">
           {% for tool in tools %}
@@ -104,8 +119,7 @@
           </label>
           {% endfor %}
         </div>
-        {% endfor %}
-        {% elif tools %}
+        {% endfor %} {% elif tools %}
         <div class="grid">
           {% for tool in tools %}
           <label class="tool-item">
@@ -127,50 +141,19 @@
         </div>
       </form>
 
-      <form
-        id="aptUpdateForm"
-        action="{{ url_for('main.system_apt_update') }}"
-        method="post"
-        class="card"
-        style="margin-top: 12px"
-      >
-        <h2>System Updates</h2>
-        <div class="grid">
-          <button type="submit" class="primary">apt update</button>
-        </div>
-      </form>
-      <form
-        id="aptUpgradeForm"
-        action="{{ url_for('main.system_apt_upgrade') }}"
-        method="post"
-        class="card"
-        style="margin-top:10px;"
-      >
-        <div class="grid">
-          <button type="submit" class="primary">apt upgrade -y</button>
-        </div>
-      </form>
-      <form
-        id="snapRefreshForm"
-        action="{{ url_for('main.system_snap_refresh') }}"
-        method="post"
-        class="card"
-        style="margin-top:10px;"
-      >
-        <div class="grid">
-          <button type="submit" class="primary">snap refresh</button>
-        </div>
-      </form>
+      
       <form
         id="oneClickUpgradeForm"
         action="{{ url_for('main.system_one_click_upgrade') }}"
         method="post"
         class="card"
-        style="margin-top:10px;"
+        style="margin-top: 10px"
       >
         <h2>One-click Upgrade</h2>
         <div class="grid">
-          <button type="submit" class="primary">Run apt update + full-upgrade + snap refresh</button>
+          <button type="submit" class="primary">
+            Run apt update + full-upgrade + snap refresh
+          </button>
         </div>
       </form>
       <form
@@ -178,11 +161,13 @@
         action="{{ url_for('main.system_release_upgrade') }}"
         method="post"
         class="card"
-        style="margin-top:10px;"
+        style="margin-top: 10px"
       >
         <h2>Distribution Upgrade</h2>
         <div class="grid">
-          <button type="submit" class="secondary">Run do-release-upgrade</button>
+          <button type="submit" class="secondary">
+            Run do-release-upgrade
+          </button>
         </div>
       </form>
     </div>

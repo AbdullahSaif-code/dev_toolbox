@@ -1,21 +1,23 @@
 # DevToolBox
 
-DevToolBox is a Flask-based web application for automating the installation of development tools on Linux systems. It provides a simple web interface to select and install tools like Google Chrome, VSCode, Docker, and more.
+DevToolBox is a Flask-based web application for automating developer workstation setup on Debian/Ubuntu. It provides a simple web interface to install common tools, run system upgrades, and search packages.
 
 ## Features
 
-- **Modular Design:** Each tool has its own installer module for easy maintenance.
-- **Secure Installation:** Uses subprocess with sudo for elevated privileges without storing passwords.
-- **Logging:** Captures and displays installation logs for transparency.
-- **Responsive UI:** Clean, user-friendly web interface.
-- **Extensible:** Easy to add new tools by creating new installer modules.
+- **Modular installers:** Each tool has its own installer module for easy maintenance (`app/installers/`).
+- **Native elevation (pkexec):** Privileged actions trigger the OS authentication dialog (polkit). No password is stored by the app.
+- **One-click Upgrade:** Runs `apt update` → `apt full-upgrade -y` → `snap refresh` in a single action.
+- **Package Search:** Search `apt-cache` directly from the UI.
+- **Logging:** Transparent logs and concise AI summary (optional Gemini) on results page.
+- **Responsive UI:** Dark, compact UI with filter, Select All/Clear All for tools.
+- **Extensible:** Add new tools by dropping a module in `app/installers/`.
 
 ## Requirements
 
 - Python 3.10+
-- Flask 2.x
-- Debian-based Linux (e.g., Ubuntu)
-- sudo access for installations
+- Flask 3.x
+- Debian/Ubuntu (systemd + polkit recommended)
+- Admin rights (polkit/`pkexec`) for installations and upgrades
 
 ## Installation
 
@@ -27,8 +29,8 @@ DevToolBox is a Flask-based web application for automating the installation of d
 
 2. Create a virtual environment:
    ```bash
-   python3 -m venv venv
-   source venv/bin/activate
+   python3 -m venv .venv
+   source .venv/bin/activate
    ```
 
 3. Install dependencies:
@@ -45,10 +47,11 @@ DevToolBox is a Flask-based web application for automating the installation of d
 
 ## Usage
 
-1. On the main page, select the tools you want to install using checkboxes.
-2. Click "Install Selected Tools".
-3. View the installation status and logs on the results page.
-4. The app will use sudo to prompt for your password during installation.
+1. Click **Authenticate for Admin Actions** to open the OS password dialog (polkit).
+2. Use **One-click Upgrade** to run system updates in one go.
+3. Use **Package Search** to query `apt-cache search`.
+4. Select tools and click **Install Selected Tools** or **Uninstall Selected Tools**.
+5. View results and logs on the status page.
 
 ## Project Structure
 
@@ -65,14 +68,21 @@ DevToolBox is a Flask-based web application for automating the installation of d
 
 1. Create a new file in `app/installers/` (e.g., `newtool.py`).
 2. Implement an `install_newtool()` function following the pattern of existing installers.
-3. Add the tool to the `tools` list in `app/routes.py`.
-4. Update `app/utils/installer.py` to include the new module.
+3. Add the tool to the appropriate category in `app/routes.py` so it appears in the UI.
+4. No registry change is required: `app/utils/installer.py` dynamically imports `app.installers.<name>` and calls `install_<name>()` or `uninstall_<name>()`.
 
 ## Security Notes
 
-- The application does not store or handle passwords; it relies on system sudo prompts.
-- All subprocess calls are made with care to avoid shell injection.
-- Run in a secure environment and review scripts before use.
+- Elevated operations use `pkexec` which triggers a native OS dialog. The app never stores your admin password.
+- Optional Gemini API key is persisted locally to `~/.config/dev_toolbox/config.env`.
+- All subprocess calls avoid shell, passing argument arrays to `subprocess.run`.
+- Review installers before running in sensitive environments.
+
+## Gemini (optional)
+
+- The app can summarize logs using Gemini models.
+- Set your API key via the UI modal. It will be saved to `~/.config/dev_toolbox/config.env` and auto-loaded on startup.
+- If using older `google-generativeai` versions that lack `GenerativeModel`, the feature is gracefully disabled.
 
 ## Docker Support (Optional)
 
