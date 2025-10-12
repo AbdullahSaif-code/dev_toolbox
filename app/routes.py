@@ -14,27 +14,41 @@ logger = get_logger(__name__)
 
 @main.route('/')
 def index():
-    tools = [
-        {'name': 'chrome', 'display': 'Google Chrome'},
-        {'name': 'edge', 'display': 'Microsoft Edge'},
-        {'name': 'vscode', 'display': 'Visual Studio Code'},
-        {'name': 'pycharm', 'display': 'PyCharm Professional'},
-        {'name': 'jupyter', 'display': 'Jupyter Notebook'},
-        {'name': 'mysqlworkbench', 'display': 'MySQL Workbench'},
-        {'name': 'githubdesktop', 'display': 'GitHub Desktop'},
-        {'name': 'dockerdesktop', 'display': 'Docker Desktop'},
-        {'name': 'postman', 'display': 'Postman'},
-        {'name': 'drawio', 'display': 'Draw.io'},
-        {'name': 'slack', 'display': 'Slack'},
-        {'name': 'miniconda', 'display': 'Miniconda (AI env)'},
-        {'name': 'ansible', 'display': 'Ansible (Automation)'}
-    ]
+    categories = {
+        'Browsers': [
+            {'name': 'chrome', 'display': 'Google Chrome'},
+            {'name': 'edge', 'display': 'Microsoft Edge'},
+        ],
+        'Editors & IDEs': [
+            {'name': 'vscode', 'display': 'Visual Studio Code'},
+            {'name': 'pycharm', 'display': 'PyCharm Professional'},
+            {'name': 'jupyter', 'display': 'Jupyter Notebook'},
+        ],
+        'DevOps & Automation': [
+            {'name': 'dockerdesktop', 'display': 'Docker Desktop'},
+            {'name': 'docker', 'display': 'Docker Engine'},
+            {'name': 'ansible', 'display': 'Ansible'},
+        ],
+        'DB & Data Tools': [
+            {'name': 'mysqlworkbench', 'display': 'MySQL Workbench'},
+            {'name': 'drawio', 'display': 'Draw.io'},
+            {'name': 'postman', 'display': 'Postman'},
+        ],
+        'AI, 3D & Env': [
+            {'name': 'miniconda', 'display': 'Miniconda (AI env)'},
+            {'name': 'blender', 'display': 'Blender'},
+        ],
+        'Collaboration': [
+            {'name': 'slack', 'display': 'Slack'},
+            {'name': 'githubdesktop', 'display': 'GitHub Desktop'},
+        ],
+    }
     internet_ok = system_checks.check_internet()
     upgrades = system_checks.scan_upgrades() if internet_ok else {"upgrade_count": 0, "upgrades": []}
     sudo_cached = system_checks.check_sudo_cached()
     return render_template(
         'index.html',
-        tools=tools,
+        categories=categories,
         internet_ok=internet_ok,
         upgrades=upgrades,
         gemini_configured=is_configured(),

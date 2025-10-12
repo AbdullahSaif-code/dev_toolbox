@@ -47,11 +47,18 @@ def set_api_key(api_key: str) -> bool:
 
 def analyze_logs(model, logs):
     if not model:
-        return "Gemini API not configured. Set GEMINI_API_KEY to enable log analysis."
+        return ""
     try:
-        prompt = f"Analyze these installation logs for errors and suggest fixes:\n\n{logs}"
+        prompt = (
+            "You are a concise assistant. Read these installation logs and return a very short summary (1-2 lines) "
+            "that mentions success/failure and the primary cause if any. Do not include code blocks or long text.\n\n"
+            f"Logs:\n{logs}"
+        )
         response = model.generate_content(prompt)
-        return response.text if response else "No response from Gemini."
+        text = (response.text or "").strip() if response else ""
+        # Ensure max 2 lines
+        lines = [l.strip() for l in text.splitlines() if l.strip()]
+        return " ".join(lines[:2]) if lines else ""
     except Exception as e:
         logger.error(f"Gemini API error: {e}")
-        return f"Error querying Gemini: {str(e)}"
+        return ""
