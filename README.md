@@ -21,7 +21,7 @@ DevToolBox is a Flask-based web application for automating the installation of d
 
 1. Clone the repository:
    ```bash
-   git clone <repository-url>
+   git clone https://github.com/AbdullahSaif-code/dev_toolbox.git
    cd dev_toolbox
    ```
 

@@ -22,3 +22,13 @@ def install_mysqlworkbench():
     except subprocess.CalledProcessError as e:
         logger.error(f"Error installing MySQL Workbench: {e}")
         return f"Error installing MySQL Workbench: {e.stderr.decode()}"
+
+def uninstall_mysqlworkbench():
+    try:
+        if sys.platform != 'linux':
+            return "MySQL Workbench uninstallation is only supported on Linux."
+        subprocess.run(['sudo', 'apt', 'remove', '-y', 'mysql-workbench'], check=True, capture_output=True)
+        return "MySQL Workbench uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling MySQL Workbench: {e}")
+        return f"Error uninstalling MySQL Workbench: {e.stderr.decode()}"

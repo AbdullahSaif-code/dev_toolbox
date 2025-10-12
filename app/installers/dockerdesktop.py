@@ -28,3 +28,22 @@ def install_dockerdesktop():
     except subprocess.CalledProcessError as e:
         logger.error(f"Error installing Docker Desktop: {e}")
         return f"Error installing Docker Desktop: {e.stderr.decode()}"
+
+def uninstall_dockerdesktop():
+    try:
+        if sys.platform != 'linux':
+            return "Docker Desktop uninstallation is only supported on Linux."
+        # Attempt to remove package installed via dpkg/apt
+        subprocess.run(['sudo', 'apt', 'remove', '-y', 'docker-desktop'], check=False, capture_output=True)
+        # Remove leftover desktop files
+        paths = [
+            '/usr/bin/docker-desktop',
+            '/usr/share/applications/docker-desktop.desktop',
+        ]
+        for p in paths:
+            if os.path.exists(p):
+                subprocess.run(['sudo', 'rm', '-f', p], check=False, capture_output=True)
+        return "Docker Desktop uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling Docker Desktop: {e}")
+        return f"Error uninstalling Docker Desktop: {e.stderr.decode() if e.stderr else str(e)}"

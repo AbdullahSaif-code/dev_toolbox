@@ -18,13 +18,14 @@
   }
   document.addEventListener('keydown', (e)=>{ if(e.key==='Escape') close(); });
 
-  // Loading overlay on install submit
-  const form = document.getElementById('installForm');
+  // Loading overlay on any form submit
   const overlay = document.getElementById('loadingOverlay');
-  if (form && overlay) {
-    form.addEventListener('submit', function(){
+  const attach = (f)=>{
+    if (!f || !overlay) return;
+    f.addEventListener('submit', function(){
       overlay.classList.remove('hidden');
       overlay.setAttribute('aria-hidden','false');
     });
-  }
+  };
+  Array.from(document.querySelectorAll('form')).forEach(attach);
 })();

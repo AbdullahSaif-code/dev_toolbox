@@ -21,3 +21,13 @@ def install_vscode():
     except subprocess.CalledProcessError as e:
         logger.error(f"Error installing VSCode: {e}")
         return f"Error installing Visual Studio Code: {e.stderr.decode()}"
+
+def uninstall_vscode():
+    try:
+        if sys.platform != 'linux':
+            return "VSCode uninstallation is only supported on Linux."
+        subprocess.run(['sudo', 'snap', 'remove', 'code'], check=True, capture_output=True)
+        return "Visual Studio Code uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling VSCode: {e}")
+        return f"Error uninstalling Visual Studio Code: {e.stderr.decode()}"

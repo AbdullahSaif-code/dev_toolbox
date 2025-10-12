@@ -30,3 +30,15 @@ def install_pycharm():
     except Exception as e:
         logger.error(f"Error installing PyCharm: {e}")
         return f"Error installing PyCharm Professional: {str(e)}"
+
+def uninstall_pycharm():
+    try:
+        if sys.platform != 'linux':
+            return "PyCharm uninstallation is only supported on Linux."
+        target_dir = '/opt/pycharm-professional'
+        if os.path.isdir(target_dir):
+            subprocess.run(['sudo', 'rm', '-rf', target_dir], check=True, capture_output=True)
+        return "PyCharm Professional uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling PyCharm: {e}")
+        return f"Error uninstalling PyCharm Professional: {e.stderr.decode() if e.stderr else str(e)}"

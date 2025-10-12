@@ -30,3 +30,18 @@ def install_postman():
     except Exception as e:
         logger.error(f"Error installing Postman: {e}")
         return f"Error installing Postman: {str(e)}"
+
+def uninstall_postman():
+    try:
+        if sys.platform != 'linux':
+            return "Postman uninstallation is only supported on Linux."
+        if os.path.isdir('/opt/Postman'):
+            subprocess.run(['sudo', 'rm', '-rf', '/opt/Postman'], check=True, capture_output=True)
+        # Remove common desktop entry path if present
+        desktop_entry = '/usr/share/applications/postman.desktop'
+        if os.path.exists(desktop_entry):
+            subprocess.run(['sudo', 'rm', '-f', desktop_entry], check=True, capture_output=True)
+        return "Postman uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling Postman: {e}")
+        return f"Error uninstalling Postman: {e.stderr.decode() if e.stderr else str(e)}"

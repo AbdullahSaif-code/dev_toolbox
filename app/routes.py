@@ -1,5 +1,5 @@
 from flask import Blueprint, render_template, request, redirect, url_for
-from .utils.installer import install_tools
+from .utils.installer import install_tools, uninstall_tools
 from .utils.logging import get_logger
 from .utils import system_checks
 from .utils.gemini_helper import (
@@ -52,6 +52,16 @@ def install():
     model = initialize_gemini()
     gemini_analysis = analyze_logs(model, logs_str) if model else "Gemini analysis not available."
     return render_template('status.html', results=results, logs=logs, gemini_analysis=gemini_analysis)
+
+@main.route('/uninstall', methods=['POST'])
+def uninstall():
+    selected_tools = request.form.getlist('tools')
+    if not selected_tools:
+        return redirect(url_for('main.index'))
+
+    results, logs = uninstall_tools(selected_tools)
+    # We now hide Gemini output per requirements
+    return render_template('status.html', results=results, logs=logs, gemini_analysis="")
 
 @main.route('/api/set-gemini-key', methods=['POST'])
 def set_gemini_key():

@@ -25,3 +25,23 @@ def install_edge():
     except subprocess.CalledProcessError as e:
         logger.error(f"Error installing Edge: {e}")
         return f"Error installing Microsoft Edge: {e.stderr.decode()}"
+
+def uninstall_edge():
+    try:
+        if sys.platform != 'linux':
+            return "Edge uninstallation is only supported on Linux."
+
+        subprocess.run(['sudo', 'apt', 'remove', '-y', 'microsoft-edge-stable'], check=True, capture_output=True)
+
+        list_file = '/etc/apt/sources.list.d/microsoft-edge-dev.list'
+        if os.path.exists(list_file):
+            subprocess.run(['sudo', 'rm', '-f', list_file], check=True, capture_output=True)
+        gpg = '/etc/apt/trusted.gpg.d/microsoft.gpg'
+        if os.path.exists(gpg):
+            subprocess.run(['sudo', 'rm', '-f', gpg], check=True, capture_output=True)
+        subprocess.run(['sudo', 'apt', 'update'], check=True, capture_output=True)
+
+        return "Microsoft Edge uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling Edge: {e}")
+        return f"Error uninstalling Microsoft Edge: {e.stderr.decode()}"

@@ -50,3 +50,28 @@ def install_miniconda():
     except Exception as e:
         logger.error(f"Miniconda installation failed: {e}")
         return f"Error installing Miniconda: {str(e)}"
+
+def uninstall_miniconda():
+    try:
+        # Remove installation directory if exists
+        if os.path.isdir(INSTALL_PREFIX):
+            shutil.rmtree(INSTALL_PREFIX)
+
+        # Remove PATH line from .bashrc if previously added
+        bashrc = os.path.join(HOME, ".bashrc")
+        path_line = f'export PATH="{INSTALL_PREFIX}/bin:$PATH"'
+        if os.path.exists(bashrc):
+            try:
+                with open(bashrc, "r", encoding="utf-8", errors="ignore") as f:
+                    lines = f.readlines()
+                with open(bashrc, "w", encoding="utf-8") as f:
+                    for line in lines:
+                        if path_line not in line:
+                            f.write(line)
+            except Exception as e:
+                logger.warning(f"Could not update ~/.bashrc while uninstalling Miniconda: {e}")
+
+        return "Miniconda uninstalled. You may need to open a new shell."
+    except Exception as e:
+        logger.error(f"Miniconda uninstall failed: {e}")
+        return f"Error uninstalling Miniconda: {str(e)}"

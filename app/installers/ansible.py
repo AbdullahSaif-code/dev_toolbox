@@ -20,3 +20,17 @@ def install_ansible():
     except Exception as e:
         logger.error(f"Ansible installation failed: {e}")
         return f"Error installing Ansible: {str(e)}"
+
+def uninstall_ansible():
+    try:
+        if not shutil.which("ansible"):
+            return "Ansible is not installed."
+        subprocess.run(["sudo", "apt", "remove", "-y", "ansible"], check=True, capture_output=True)
+        return "Ansible uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        stderr = e.stderr.decode(errors='ignore') if e.stderr else str(e)
+        logger.error(f"Ansible uninstall error: {stderr}")
+        return f"Error uninstalling Ansible: {stderr}"
+    except Exception as e:
+        logger.error(f"Ansible uninstallation failed: {e}")
+        return f"Error uninstalling Ansible: {str(e)}"

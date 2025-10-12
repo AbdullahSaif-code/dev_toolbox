@@ -16,3 +16,13 @@ def install_jupyter():
     except subprocess.CalledProcessError as e:
         logger.error(f"Error installing Jupyter: {e}")
         return f"Error installing Jupyter Notebook: {e.stderr.decode()}"
+
+def uninstall_jupyter():
+    try:
+        if sys.platform != 'linux':
+            return "Jupyter uninstallation is only supported on Linux."
+        subprocess.run(['pip3', 'uninstall', '-y', 'jupyter'], check=True, capture_output=True)
+        return "Jupyter Notebook uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling Jupyter: {e}")
+        return f"Error uninstalling Jupyter Notebook: {e.stderr.decode()}"

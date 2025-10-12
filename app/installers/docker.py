@@ -16,3 +16,15 @@ def install_docker():
             return "Unsupported OS for Docker installation."
     except subprocess.CalledProcessError as e:
         return f"Error installing Docker: {str(e)}"
+
+def uninstall_docker():
+    try:
+        if sys.platform != 'linux':
+            return "Unsupported OS for Docker uninstallation."
+        # Stop service if running, ignore errors
+        subprocess.run(['sudo', 'systemctl', 'stop', 'docker'], check=False)
+        # Remove package
+        subprocess.run(['sudo', 'apt', 'remove', '-y', 'docker.io'], check=True)
+        return "Docker uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        return f"Error uninstalling Docker: {str(e)}"

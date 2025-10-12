@@ -21,3 +21,13 @@ def install_drawio():
     except subprocess.CalledProcessError as e:
         logger.error(f"Error installing Draw.io: {e}")
         return f"Error installing Draw.io: {e.stderr.decode()}"
+
+def uninstall_drawio():
+    try:
+        if sys.platform != 'linux':
+            return "Draw.io uninstallation is only supported on Linux."
+        subprocess.run(['sudo', 'snap', 'remove', 'drawio'], check=True, capture_output=True)
+        return "Draw.io uninstalled successfully."
+    except subprocess.CalledProcessError as e:
+        logger.error(f"Error uninstalling Draw.io: {e}")
+        return f"Error uninstalling Draw.io: {e.stderr.decode()}"

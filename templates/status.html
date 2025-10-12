@@ -15,10 +15,6 @@
         </ul>
         <h2>Logs</h2>
         <pre>{{ logs|join('\n') }}</pre>
-        {% if gemini_analysis %}
-        <h2>AI Analysis and Fixes</h2>
-        <div class="gemini-response">{{ gemini_analysis }}</div>
-        {% endif %}
         <a href="{{ url_for('main.index') }}">Back to Tools</a>
     </div>
 </body>
