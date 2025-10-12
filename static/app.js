@@ -50,4 +50,48 @@
   }
   // Kick off shortly after load to allow UI paint
   window.addEventListener('load', ()=> setTimeout(autoElevateOnce, 300));
+
+  // Tool filter and select controls
+  const filterInput = document.getElementById('toolFilter');
+  const selectAllBtn = document.getElementById('selectAll');
+  const clearAllBtn = document.getElementById('clearAll');
+  function applyFilter(){
+    const q = (filterInput?.value || '').toLowerCase();
+    document.querySelectorAll('label.tool-item').forEach(lbl => {
+      const text = lbl.textContent.toLowerCase();
+      lbl.style.display = !q || text.includes(q) ? '' : 'none';
+    });
+  }
+  if (filterInput){
+    filterInput.addEventListener('input', applyFilter);
+  }
+  function setAll(checked){
+    document.querySelectorAll('label.tool-item input[type="checkbox"]').forEach(cb => { cb.checked = checked; });
+  }
+  if (selectAllBtn) selectAllBtn.addEventListener('click', ()=> setAll(true));
+  if (clearAllBtn) clearAllBtn.addEventListener('click', ()=> setAll(false));
+
+  // Package search (apt-cache search)
+  const pkgForm = document.getElementById('pkgSearchForm');
+  const pkgInput = document.getElementById('pkgQuery');
+  const pkgOut = document.getElementById('pkgResults');
+  if (pkgForm && pkgInput && pkgOut){
+    pkgForm.addEventListener('submit', async (e)=>{
+      e.preventDefault();
+      const q = (pkgInput.value || '').trim();
+      if (!q) return;
+      pkgOut.textContent = 'Searching...';
+      try {
+        const res = await fetch(`/api/search-packages?q=${encodeURIComponent(q)}`);
+        const data = await res.json();
+        if (Array.isArray(data.results) && data.results.length){
+          pkgOut.textContent = data.results.join('\n');
+        } else {
+          pkgOut.textContent = 'No results.';
+        }
+      } catch (err) {
+        pkgOut.textContent = 'Search error.';
+      }
+    });
+  }
 })();

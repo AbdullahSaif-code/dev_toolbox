@@ -1,4 +1,4 @@
-from flask import Blueprint, render_template, request, redirect, url_for
+from flask import Blueprint, render_template, request, redirect, url_for, jsonify
 from .utils.installer import install_tools, uninstall_tools
 from .utils.logging import get_logger
 from .utils import system_checks
@@ -72,6 +72,21 @@ def elevate_auth():
     except Exception:
         pass
     return redirect(url_for('main.index'))
+
+@main.route('/api/search-packages')
+def api_search_packages():
+    query = (request.args.get('q') or '').strip()
+    if not query:
+        return jsonify({"results": []})
+    import subprocess
+    try:
+        proc = subprocess.run(["/usr/bin/apt-cache", "search", query], capture_output=True, text=True, timeout=30)
+        lines = (proc.stdout or '').splitlines()
+        # Normalize: show 'name - summary'
+        results = [line.strip() for line in lines if line.strip()]
+        return jsonify({"results": results[:200]})
+    except Exception:
+        return jsonify({"results": []})
 
 @main.route('/install', methods=['POST'])
 def install():

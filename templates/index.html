@@ -88,7 +88,13 @@
         class="card"
       >
         <h2>Select tools to install</h2>
-        {% if categories %} {% for cat, tools in categories.items() %}
+        <div style="display:flex; gap:8px; align-items:center; margin:6px 0 10px 0;">
+          <input id="toolFilter" class="input" placeholder="Filter tools..." style="max-width:280px;" />
+          <button type="button" id="selectAll" class="secondary">Select All</button>
+          <button type="button" id="clearAll" class="secondary">Clear All</button>
+        </div>
+        {% if categories %}
+        {% for cat, tools in categories.items() %}
         <h3 style="margin: 12px 0 8px 4px; color: #93c5fd">{{ cat }}</h3>
         <div class="grid">
           {% for tool in tools %}
@@ -98,7 +104,8 @@
           </label>
           {% endfor %}
         </div>
-        {% endfor %} {% elif tools %}
+        {% endfor %}
+        {% elif tools %}
         <div class="grid">
           {% for tool in tools %}
           <label class="tool-item">
