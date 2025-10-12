@@ -3,7 +3,10 @@
 <head>
     <title>DevToolBox</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-    <link rel="shortcut icon" href="./favicon_io/favicon.ico" type="image/x-icon">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.svg') }}">
+    
 </head>
 <body data-gemini-configured="{{ 'true' if gemini_configured else 'false' }}">
     <div class="container">
@@ -54,14 +57,28 @@
 
         <form id="installForm" action="{{ url_for('main.install') }}" method="post" class="card">
             <h2>Select tools to install</h2>
-            <div class="grid">
+            {% if categories %}
+              {% for cat, group in categories.items() %}
+              <h3 style="margin:12px 0 8px 4px; color:#93c5fd;">{{ cat }}</h3>
+              <div class="grid">
+                  {% for tool in group %}
+                  <label class="tool-item">
+                      <input type="checkbox" name="tools" value="{{ tool.name }}">
+                      <span>{{ tool.display }}</span>
+                  </label>
+                  {% endfor %}
+              </div>
+              {% endfor %}
+            {% elif tools %}
+              <div class="grid">
                 {% for tool in tools %}
-                <label class="tool-item">
-                    <input type="checkbox" name="tools" value="{{ tool.name }}">
-                    <span>{{ tool.display }}</span>
-                </label>
+                  <label class="tool-item">
+                      <input type="checkbox" name="tools" value="{{ tool.name }}">
+                      <span>{{ tool.display }}</span>
+                  </label>
                 {% endfor %}
-            </div>
+              </div>
+            {% endif %}
             <div style="display:flex; gap:8px;">
                 <button type="submit" class="primary">Install Selected Tools</button>
                 <button type="submit" formaction="{{ url_for('main.uninstall') }}" class="secondary">Uninstall Selected Tools</button>
