@@ -71,7 +71,7 @@ def _run_collect(cmd: list[str]) -> tuple[int, str]:
 def apt_update() -> tuple[str, str]:
     """Run sudo apt update and return (message, log)."""
     try:
-        code, log = _run_collect(["sudo", "apt", "update"])
+        code, log = _run_collect(["pkexec", "/usr/bin/apt", "update"])
         if code == 0:
             return ("apt update completed.", log)
         return ("apt update failed.", log)
@@ -81,7 +81,7 @@ def apt_update() -> tuple[str, str]:
 def apt_upgrade() -> tuple[str, str]:
     """Run sudo apt upgrade -y and return (message, log)."""
     try:
-        code, log = _run_collect(["sudo", "apt", "upgrade", "-y"])
+        code, log = _run_collect(["pkexec", "/usr/bin/apt", "upgrade", "-y"])
         if code == 0:
             return ("apt upgrade completed.", log)
         return ("apt upgrade failed.", log)
@@ -91,7 +91,7 @@ def apt_upgrade() -> tuple[str, str]:
 def snap_refresh() -> tuple[str, str]:
     """Run sudo snap refresh and return (message, log)."""
     try:
-        code, log = _run_collect(["sudo", "snap", "refresh"])
+        code, log = _run_collect(["pkexec", "/usr/bin/snap", "refresh"])
         if code == 0:
             return ("snap refresh completed.", log)
         return ("snap refresh failed.", log)

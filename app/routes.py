@@ -42,6 +42,13 @@ def index():
             {'name': 'slack', 'display': 'Slack'},
             {'name': 'githubdesktop', 'display': 'GitHub Desktop'},
         ],
+        'Web & App Dev': [
+            {'name': 'git', 'display': 'Git'},
+            {'name': 'nodejs', 'display': 'Node.js & npm'},
+            {'name': 'yarn', 'display': 'Yarn (npm)'},
+            {'name': 'flutter', 'display': 'Flutter SDK'},
+            {'name': 'androidstudio', 'display': 'Android Studio'},
+        ],
     }
     internet_ok = system_checks.check_internet()
     upgrades = system_checks.scan_upgrades() if internet_ok else {"upgrade_count": 0, "upgrades": []}
@@ -55,6 +62,16 @@ def index():
         gemini_configured=is_configured(),
         sudo_cached=sudo_cached,
     )
+
+@main.route('/auth/elevate', methods=['POST'])
+def elevate_auth():
+    try:
+        # Trigger OS auth dialog; harmless command
+        import subprocess
+        subprocess.run(["pkexec", "/usr/bin/true"], timeout=120)
+    except Exception:
+        pass
+    return redirect(url_for('main.index'))
 
 @main.route('/install', methods=['POST'])
 def install():

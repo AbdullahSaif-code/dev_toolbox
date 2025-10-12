@@ -53,6 +53,14 @@
         </details>
         {% endif %}
 
+        <form action="{{ url_for('main.elevate_auth') }}" method="post" class="card" style="margin-top:12px;">
+            <h2>Authenticate for Admin Actions</h2>
+            <div class="grid">
+                <button type="submit" class="primary">Authenticate</button>
+            </div>
+            <div class="hint">This opens a system dialog to grant temporary admin permissions for updates and installs.</div>
+        </form>
+
         <form id="installForm" action="{{ url_for('main.install') }}" method="post" class="card">
             <h2>Select tools to install</h2>
             {% if categories %}
