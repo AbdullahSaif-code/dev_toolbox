@@ -1,0 +1,101 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>DevToolBox</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+</head>
+<body data-gemini-configured="{{ 'true' if gemini_configured else 'false' }}">
+    <div class="container">
+        <header class="header">
+            <h1>DevToolBox</h1>
+            <div class="badges">
+                {% if internet_ok %}
+                <span class="badge badge-success">Internet: Online</span>
+                {% else %}
+                <span class="badge badge-danger">Internet: Offline</span>
+                {% endif %}
+
+                {% if upgrades and upgrades.upgrade_count %}
+                <span class="badge badge-warning">Upgrades: {{ upgrades.upgrade_count }}</span>
+                {% else %}
+                <span class="badge">Upgrades: 0</span>
+                {% endif %}
+
+                {% if gemini_configured %}
+                <span class="badge badge-info">Gemini: Configured</span>
+                {% else %}
+                <button id="openKeyModal" type="button" class="btn-link">Set Gemini API Key</button>
+                {% endif %}
+
+                {% if sudo_cached %}
+                <span class="badge badge-success">Sudo: Ready</span>
+                {% else %}
+                <span class="badge badge-danger">Sudo: Needs Auth</span>
+                {% endif %}
+            </div>
+        </header>
+
+        {% if not sudo_cached %}
+        <div class="alert alert-warning">
+            <strong>Elevated privileges required.</strong> Some installers need sudo. For security, the app does not ask for your password here.
+            <div class="mt-6">Open a terminal on this machine and run:</div>
+            <pre><code>sudo -v</code></pre>
+            <div class="mt-6">This caches your sudo credentials for a short time. Then return here and click Install.</div>
+        </div>
+        {% endif %}
+
+        {% if upgrades and upgrades.upgrade_count and upgrades.upgrades %}
+        <details class="upgrade-details">
+            <summary>View upgrade details</summary>
+            <pre>{{ upgrades.upgrades | join('\n') }}</pre>
+        </details>
+        {% endif %}
+
+        <form action="{{ url_for('main.install') }}" method="post" class="card">
+            <h2>Select tools to install</h2>
+            <div class="grid">
+                {% for tool in tools %}
+                <label class="tool-item">
+                    <input type="checkbox" name="tools" value="{{ tool.name }}">
+                    <span>{{ tool.display }}</span>
+                </label>
+                {% endfor %}
+            </div>
+            <button type="submit" class="primary">Install Selected Tools</button>
+        </form>
+    </div>
+
+    <div id="keyModal" class="modal hidden" aria-hidden="true" role="dialog">
+        <div class="modal-content">
+            <h3>Enter Gemini API Key</h3>
+            <form action="{{ url_for('main.set_gemini_key') }}" method="post">
+                <input type="password" name="api_key" placeholder="GEMINI_API_KEY" required class="input" />
+                <div class="modal-actions">
+                    <button type="submit" class="primary">Save</button>
+                    <button type="button" id="closeKeyModal" class="secondary">Cancel</button>
+                </div>
+            </form>
+            <p class="help">Your key is used only locally by this app and not stored on the server.</p>
+        </div>
+    </div>
+
+    <!-- Loading overlay -->
+    <div id="loadingOverlay" class="overlay hidden" aria-hidden="true">
+        <div class="overlay-content">
+            <div class="spinner"></div>
+            <div class="overlay-title">Installing tools...</div>
+            <div class="code-loader">
+                <pre><code>&lt;span class="dim"&gt;$&lt;/span&gt; sudo apt update
+&lt;span class="dim"&gt;$&lt;/span&gt; fetching package lists... &lt;span class="pulse"&gt;done&lt;/span&gt;
+&lt;span class="dim"&gt;$&lt;/span&gt; downloading dependencies...
+&lt;span class="dim"&gt;$&lt;/span&gt; installing packages &lt;span class="typing"&gt;████████████░░&lt;/span&gt;
+&lt;span class="dim"&gt;$&lt;/span&gt; configuring services...
+&lt;span class="dim"&gt;$&lt;/span&gt; finalizing &lt;span class="dots"&gt;...&lt;/span&gt;</code></pre>
+            </div>
+            <div class="hint">Do not close this tab. This may take a few minutes.</div>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='app.js') }}"></script>
+</body>
+</html>

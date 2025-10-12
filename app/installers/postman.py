@@ -1,0 +1,32 @@
+import subprocess
+import sys
+import os
+import tarfile
+import urllib.request
+from ..utils.logging import get_logger
+
+logger = get_logger(__name__)
+
+def install_postman():
+    try:
+        if sys.platform != 'linux':
+            return "Postman installation is only supported on Linux."
+        
+        # Check if already installed
+        if os.path.exists('/opt/Postman'):
+            return "Postman is already installed."
+        
+        # Download and install
+        url = 'https://dl.pstmn.io/download/latest/linux64'
+        tar_path = '/tmp/postman.tar.gz'
+        urllib.request.urlretrieve(url, tar_path)
+        
+        with tarfile.open(tar_path, 'r:gz') as tar:
+            tar.extractall('/opt')
+        
+        os.remove(tar_path)
+        
+        return "Postman installed successfully!"
+    except Exception as e:
+        logger.error(f"Error installing Postman: {e}")
+        return f"Error installing Postman: {str(e)}"

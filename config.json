@@ -1,0 +1,16 @@
+{
+    "tools": [
+        {
+            "name": "chrome",
+            "display": "Google Chrome",
+            "dependencies": ["wget", "gnupg"],
+            "install_method": "apt"
+        },
+        {
+            "name": "vscode",
+            "display": "Visual Studio Code",
+            "dependencies": [],
+            "install_method": "snap"
+        }
+    ]
+}
