@@ -4,9 +4,7 @@
     <title>DevToolBox</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
     <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
-    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
-    <link rel="apple-touch-icon" href="{{ url_for('static', filename='favicon.svg') }}">
-    
+    <link rel="shortcut icon" href="{{ url_for('static', filename='favicon.ico') }}" type="image/x-icon">
 </head>
 <body data-gemini-configured="{{ 'true' if gemini_configured else 'false' }}">
     <div class="container">
@@ -58,10 +56,10 @@
         <form id="installForm" action="{{ url_for('main.install') }}" method="post" class="card">
             <h2>Select tools to install</h2>
             {% if categories %}
-              {% for cat, group in categories.items() %}
+              {% for cat, tools in categories.items() %}
               <h3 style="margin:12px 0 8px 4px; color:#93c5fd;">{{ cat }}</h3>
               <div class="grid">
-                  {% for tool in group %}
+                  {% for tool in tools %}
                   <label class="tool-item">
                       <input type="checkbox" name="tools" value="{{ tool.name }}">
                       <span>{{ tool.display }}</span>

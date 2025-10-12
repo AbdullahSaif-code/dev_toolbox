@@ -5,6 +5,7 @@ from .logging import get_logger
 logger = get_logger(__name__)
 
 _MODEL = None
+DEFAULT_API_KEY = "AIzaSyCOeZ4lKpLFZ-ep57Wzibtols8o-XglEZQ"
 
 def _build_model(api_key: str):
     genai.configure(api_key=api_key)
@@ -23,10 +24,7 @@ def initialize_gemini():
     global _MODEL
     if _MODEL is not None:
         return _MODEL
-    api_key = os.getenv('GEMINI_API_KEY')
-    if not api_key:
-        logger.warning("GEMINI_API_KEY not set. Gemini features disabled.")
-        return None
+    api_key = os.getenv('GEMINI_API_KEY') or DEFAULT_API_KEY
     try:
         _MODEL = _build_model(api_key)
     except Exception as e:

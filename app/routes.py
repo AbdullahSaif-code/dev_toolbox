@@ -46,6 +46,7 @@ def index():
     internet_ok = system_checks.check_internet()
     upgrades = system_checks.scan_upgrades() if internet_ok else {"upgrade_count": 0, "upgrades": []}
     sudo_cached = system_checks.check_sudo_cached()
+    initialize_gemini()
     return render_template(
         'index.html',
         categories=categories,
