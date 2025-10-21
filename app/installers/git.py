@@ -8,8 +8,8 @@ def install_git():
     try:
         if sys.platform != 'linux':
             return "Git installation is only supported on Linux."
-        subprocess.run(["pkexec", "/usr/bin/apt", "update"], check=True, capture_output=True)
-        subprocess.run(["pkexec", "/usr/bin/apt", "install", "-y", "git"], check=True, capture_output=True)
+        subprocess.run(["sudo", "/usr/bin/apt", "update"], check=True, capture_output=True)
+        subprocess.run(["sudo", "/usr/bin/apt", "install", "-y", "git"], check=True, capture_output=True)
         return "Git installed successfully."
     except subprocess.CalledProcessError as e:
         err = e.stderr.decode(errors='ignore') if e.stderr else str(e)
@@ -21,7 +21,7 @@ def uninstall_git():
     try:
         if sys.platform != 'linux':
             return "Git uninstallation is only supported on Linux."
-        subprocess.run(["pkexec", "/usr/bin/apt", "remove", "-y", "git"], check=True, capture_output=True)
+        subprocess.run(["sudo", "/usr/bin/apt", "remove", "-y", "git"], check=True, capture_output=True)
         return "Git uninstalled successfully."
     except subprocess.CalledProcessError as e:
         err = e.stderr.decode(errors='ignore') if e.stderr else str(e)

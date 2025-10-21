@@ -68,10 +68,30 @@ def elevate_auth():
     try:
         # Trigger OS auth dialog; harmless command
         import subprocess
-        subprocess.run(["pkexec", "/usr/bin/true"], timeout=120)
+        subprocess.run(["sudo", "/usr/bin/true"], timeout=120)
     except Exception:
         pass
     return redirect(url_for('main.index'))
+
+@main.route('/admin/enable-passwordless', methods=['POST'])
+def enable_passwordless():
+    import subprocess
+    import os
+    import pwd
+    try:
+        user = pwd.getpwuid(os.getuid()).pw_name
+        sudoers_line = f"{user} ALL=(ALL) NOPASSWD: /usr/bin/apt update, /usr/bin/apt full-upgrade, /usr/bin/apt install, /usr/bin/apt remove, /usr/bin/snap refresh, /usr/bin/do-release-upgrade"
+        sudoers_path = "/etc/sudoers.d/dev_toolbox"
+        with open(sudoers_path, 'w') as f:
+            f.write(sudoers_line + "\n")
+        os.chmod(sudoers_path, 0o440)
+        # Validate
+        subprocess.run(["/usr/sbin/visudo", "-cf", sudoers_path], check=True, capture_output=True)
+        return redirect(url_for('main.index'))
+    except Exception as e:
+        # Log error but redirect anyway
+        print(f"Failed to enable passwordless: {e}")
+        return redirect(url_for('main.index'))
 
 @main.route('/api/search-packages')
 def api_search_packages():
@@ -109,13 +129,6 @@ def uninstall():
     results, logs = uninstall_tools(selected_tools)
     # We now hide Gemini output per requirements
     return render_template('status.html', results=results, logs=logs, gemini_analysis="")
-
-@main.route('/api/set-gemini-key', methods=['POST'])
-def set_gemini_key():
-    api_key = (request.form.get('api_key') or '').strip()
-    if api_key:
-        set_api_key(api_key)
-    return redirect(url_for('main.index'))
 
 @main.route('/system/apt-update', methods=['POST'])
 def system_apt_update():

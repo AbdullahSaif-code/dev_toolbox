@@ -71,7 +71,7 @@ def _run_collect(cmd: list[str]) -> tuple[int, str]:
 def apt_update() -> tuple[str, str]:
     """Run sudo apt update and return (message, log)."""
     try:
-        code, log = _run_collect(["pkexec", "/usr/bin/apt", "update"])
+        code, log = _run_collect(["sudo", "/usr/bin/apt", "update"])
         if code == 0:
             return ("apt update completed.", log)
         return ("apt update failed.", log)
@@ -81,7 +81,7 @@ def apt_update() -> tuple[str, str]:
 def apt_upgrade() -> tuple[str, str]:
     """Run sudo apt upgrade -y and return (message, log)."""
     try:
-        code, log = _run_collect(["pkexec", "/usr/bin/apt", "upgrade", "-y"])
+        code, log = _run_collect(["sudo", "/usr/bin/apt", "upgrade", "-y"])
         if code == 0:
             return ("apt upgrade completed.", log)
         return ("apt upgrade failed.", log)
@@ -91,7 +91,7 @@ def apt_upgrade() -> tuple[str, str]:
 def snap_refresh() -> tuple[str, str]:
     """Run sudo snap refresh and return (message, log)."""
     try:
-        code, log = _run_collect(["pkexec", "/usr/bin/snap", "refresh"])
+        code, log = _run_collect(["sudo", "/usr/bin/snap", "refresh"])
         if code == 0:
             return ("snap refresh completed.", log)
         return ("snap refresh failed.", log)
@@ -133,7 +133,7 @@ def one_click_upgrade() -> tuple[dict, str]:
 def do_release_upgrade() -> tuple[str, str]:
     """Attempt a distribution release upgrade non-interactively. Returns (message, log)."""
     try:
-        code, log = _run_collect(["pkexec", "/usr/bin/do-release-upgrade", "-f", "DistUpgradeViewNonInteractive", "-y"])
+        code, log = _run_collect(["sudo", "/usr/bin/do-release-upgrade", "-f", "DistUpgradeViewNonInteractive", "-y"])
         if code == 0:
             return ("release upgrade initiated/completed.", log)
         return ("release upgrade failed.", log)
