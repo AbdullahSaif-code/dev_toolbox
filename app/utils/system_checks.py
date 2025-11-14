@@ -1,143 +1,146 @@
 import subprocess
 import socket
+import time
 from .logging import get_logger
 
 logger = get_logger(__name__)
 
 def check_internet(host: str = "8.8.8.8", port: int = 53, timeout: float = 3.0) -> bool:
+    """Check internet connectivity"""
     try:
         socket.setdefaulttimeout(timeout)
-        with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as sock:
-            sock.connect((host, port))
+        socket.socket(socket.AF_INET, socket.SOCK_STREAM).connect((host, port))
+        logger.debug("Internet connectivity confirmed")
         return True
     except Exception as e:
-        logger.warning(f"Internet check failed: {e}")
+        logger.debug(f"Internet check failed: {e}")
         return False
 
 def scan_upgrades() -> dict:
-    """Return a dict with available upgrade info using apt in simulate mode.
-    Does not require sudo and does not perform any changes.
-    """
+    """Return a dict with available upgrade info"""
     try:
-        # Update package lists (no sudo required for reading sources)
-        update = subprocess.run([
-            "apt-get", "update"
-        ], capture_output=True, text=True)
-
-        # Simulate upgrade to list packages to be upgraded
-        sim = subprocess.run([
-            "apt-get", "-s", "upgrade"
-        ], capture_output=True, text=True)
-
+        result = subprocess.run(
+            ["apt-get", "-s", "upgrade"],
+            capture_output=True,
+            text=True,
+            timeout=30
+        )
+        
         upgrades = []
-        for line in sim.stdout.splitlines():
-            # Lines like: Inst pkg [ver] (newver repo)
+        for line in result.stdout.splitlines():
             if line.startswith("Inst "):
                 upgrades.append(line)
+        
         return {
-            "updated": update.returncode == 0,
             "upgrade_count": len(upgrades),
             "upgrades": upgrades,
         }
+    except subprocess.TimeoutExpired:
+        logger.warning("Upgrade scan timed out")
+        return {"upgrade_count": 0, "upgrades": []}
     except FileNotFoundError:
+        logger.warning("apt-get not found")
         return {"error": "apt-get not found", "upgrades": [], "upgrade_count": 0}
     except Exception as e:
         logger.error(f"Upgrade scan error: {e}")
         return {"error": str(e), "upgrades": [], "upgrade_count": 0}
 
 def check_sudo_cached() -> bool:
-    """Return True if sudo timestamp is valid (no password prompt needed).
-    Uses non-interactive mode so it never hangs the server process.
-    """
+    """Check if sudo is cached"""
     try:
-        proc = subprocess.run([
-            "sudo", "-n", "true"
-        ], capture_output=True)
-        return proc.returncode == 0
-    except FileNotFoundError:
-        # sudo not installed; treat as not available
-        logger.warning("sudo not found on system")
-        return False
-    except Exception as e:
-        logger.warning(f"sudo check failed: {e}")
+        result = subprocess.run(
+            ['sudo', '-n', 'true'],
+            capture_output=True,
+            timeout=2,
+            text=True
+        )
+        return result.returncode == 0
+    except Exception:
         return False
 
-def _run_collect(cmd: list[str]) -> tuple[int, str]:
-    """Run a command and collect stdout+stderr as text."""
-    proc = subprocess.run(cmd, capture_output=True, text=True)
-    out = (proc.stdout or "") + (proc.stderr or "")
-    return proc.returncode, out
-
-def apt_update() -> tuple[str, str]:
-    """Run sudo apt update and return (message, log)."""
+def _run_collect(cmd: list, timeout: int = 120) -> tuple:
+    """Run a command and collect output"""
     try:
-        code, log = _run_collect(["sudo", "/usr/bin/apt", "update"])
-        if code == 0:
-            return ("apt update completed.", log)
-        return ("apt update failed.", log)
-    except Exception as e:
-        return ("apt update error.", str(e))
-
-def apt_upgrade() -> tuple[str, str]:
-    """Run sudo apt upgrade -y and return (message, log)."""
-    try:
-        code, log = _run_collect(["sudo", "/usr/bin/apt", "upgrade", "-y"])
-        if code == 0:
-            return ("apt upgrade completed.", log)
-        return ("apt upgrade failed.", log)
-    except Exception as e:
-        return ("apt upgrade error.", str(e))
-
-def snap_refresh() -> tuple[str, str]:
-    """Run sudo snap refresh and return (message, log)."""
-    try:
-        code, log = _run_collect(["sudo", "/usr/bin/snap", "refresh"])
-        if code == 0:
-            return ("snap refresh completed.", log)
-        return ("snap refresh failed.", log)
+        result = subprocess.run(
+            cmd,
+            capture_output=True,
+            text=True,
+            timeout=timeout
+        )
+        output = (result.stdout or "") + (result.stderr or "")
+        return result.returncode, output
+    except subprocess.TimeoutExpired:
+        return 124, f"Command timed out after {timeout}s"
     except FileNotFoundError:
-        return ("snap not installed.", "snap command not found")
+        return 127, f"Command not found: {cmd[0]}"
     except Exception as e:
-        return ("snap refresh error.", str(e))
+        return 1, str(e)
 
-def one_click_upgrade() -> tuple[dict, str]:
-    """Run apt update, apt full-upgrade -y, and snap refresh in sequence. Returns (results, combined_log)."""
-    results: dict = {}
-    logs: list[str] = []
-    # apt update
+def apt_update() -> tuple:
+    """Run sudo apt update"""
     try:
-        code, log = _run_collect(["pkexec", "/usr/bin/apt", "update"])
-        logs.append(log)
-        results["apt update"] = "completed" if code == 0 else "failed"
-    except Exception as e:
-        results["apt update"] = "error"
-        logs.append(str(e))
-    # apt full-upgrade
-    try:
-        code, log = _run_collect(["pkexec", "/usr/bin/apt", "full-upgrade", "-y"])
-        logs.append(log)
-        results["apt full-upgrade"] = "completed" if code == 0 else "failed"
-    except Exception as e:
-        results["apt full-upgrade"] = "error"
-        logs.append(str(e))
-    # snap refresh
-    try:
-        code, log = _run_collect(["pkexec", "/usr/bin/snap", "refresh"])
-        logs.append(log)
-        results["snap refresh"] = "completed" if code == 0 else "failed"
-    except Exception as e:
-        results["snap refresh"] = "error"
-        logs.append(str(e))
-    return results, "\n\n".join(logs)
-
-def do_release_upgrade() -> tuple[str, str]:
-    """Attempt a distribution release upgrade non-interactively. Returns (message, log)."""
-    try:
-        code, log = _run_collect(["sudo", "/usr/bin/do-release-upgrade", "-f", "DistUpgradeViewNonInteractive", "-y"])
+        code, log = _run_collect(["sudo", "/usr/bin/apt", "update"], timeout=60)
         if code == 0:
-            return ("release upgrade initiated/completed.", log)
-        return ("release upgrade failed.", log)
-    except FileNotFoundError:
-        return ("do-release-upgrade not found.", "install ubuntu-release-upgrader-core")
+            return ("✓ apt update completed", log)
+        return (f"✗ apt update failed (code {code})", log)
     except Exception as e:
-        return ("release upgrade error.", str(e))
+        return (f"✗ Error: {str(e)}", str(e))
+
+def apt_upgrade() -> tuple:
+    """Run sudo apt upgrade -y"""
+    try:
+        code, log = _run_collect(["sudo", "/usr/bin/apt", "upgrade", "-y"], timeout=300)
+        if code == 0:
+            return ("✓ apt upgrade completed", log)
+        return (f"✗ apt upgrade failed (code {code})", log)
+    except Exception as e:
+        return (f"✗ Error: {str(e)}", str(e))
+
+def snap_refresh() -> tuple:
+    """Run sudo snap refresh"""
+    try:
+        code, log = _run_collect(["sudo", "/usr/bin/snap", "refresh"], timeout=300)
+        if code == 0:
+            return ("✓ snap refresh completed", log)
+        return (f"✗ snap refresh failed (code {code})", log)
+    except FileNotFoundError:
+        return ("⚠ snap not installed", "snap command not found")
+    except Exception as e:
+        return (f"✗ Error: {str(e)}", str(e))
+
+def one_click_upgrade() -> tuple:
+    """Run all system upgrades"""
+    results = {}
+    logs = []
+    
+    logger.info("Starting one-click upgrade...")
+    
+    msg, log = apt_update()
+    results["apt update"] = msg
+    logs.append(f"=== apt update ===\n{log}\n")
+    time.sleep(1)
+    
+    msg, log = apt_upgrade()
+    results["apt upgrade"] = msg
+    logs.append(f"=== apt upgrade ===\n{log}\n")
+    time.sleep(1)
+    
+    msg, log = snap_refresh()
+    results["snap refresh"] = msg
+    logs.append(f"=== snap refresh ===\n{log}\n")
+    
+    combined_log = "".join(logs)
+    return results, combined_log
+
+def do_release_upgrade() -> tuple:
+    """Run do-release-upgrade"""
+    try:
+        code, log = _run_collect(
+            ["sudo", "/usr/bin/do-release-upgrade", "-f", "DistUpgradeViewNonInteractive"],
+            timeout=3600
+        )
+        if code == 0:
+            return ("✓ Distribution upgrade completed", log)
+        return (f"✗ do-release-upgrade failed (code {code})", log)
+    except Exception as e:
+        return (f"✗ Error: {str(e)}", str(e))

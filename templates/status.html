@@ -1,25 +1,64 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <title>Installation Status</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
-</head>
-<body>
-    <div class="container">
-        <h1>Installation Results</h1>
-        <h2>Tool Installation Status</h2>
-        <ul>
-            {% for tool, result in results.items() %}
-            <li><strong>{{ tool.capitalize() }}:</strong> {{ result }}</li>
-            {% endfor %}
-        </ul>
-        <h2>Logs</h2>
-        <pre>{{ logs|join('\n') }}</pre>
-        {% if gemini_analysis %}
-        <h2>AI Summary</h2>
-        <div class="gemini-response">{{ gemini_analysis }}</div>
-        {% endif %}
-        <a href="{{ url_for('main.index') }}">Back to Tools</a>
+  <head>
+    <title>Installation Status - DevToolBox</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}" />
+  </head>
+  <body>
+    <div class="container status-container">
+      <header class="header">
+        <h1>Installation Status</h1>
+        <div class="badges">
+          <span class="badge badge-info">Real-time Updates</span>
+        </div>
+      </header>
+
+      <div id="resultsContainer"></div>
+
+      {% if gemini_analysis %}
+      <div class="card" style="background: linear-gradient(135deg, #f0f9ff 0%, #fef3c7 100%); border: 2px solid #3b82f6;">
+        <h2 style="color: #1e40af; display: flex; align-items: center; gap: 12px;">
+          <span>✨</span>
+          AI Analysis (Gemini)
+        </h2>
+        <p style="color: #1e40af; font-weight: 500; line-height: 1.6;">{{ gemini_analysis }}</p>
+      </div>
+      {% endif %}
+
+      <div class="card">
+        <h2>Installation Logs</h2>
+        <div class="modal-details" id="logsOutput">
+{% for log in logs %}{{ log }}
+{% endfor %}
+        </div>
+      </div>
+
+      <div class="grid" style="grid-template-columns: 1fr 1fr; gap: 16px;">
+        <button class="primary" onclick="window.location.href='/'">
+          ← Back to Home
+        </button>
+        <button class="secondary" onclick="copyLogs()">
+          📋 Copy Logs
+        </button>
+      </div>
     </div>
-</body>
+
+    <script>
+      function copyLogs() {
+        const logsElement = document.getElementById('logsOutput');
+        const text = logsElement.textContent;
+        navigator.clipboard.writeText(text).then(() => {
+          alert('Logs copied to clipboard!');
+        });
+      }
+
+      // Animate status items
+      document.addEventListener('DOMContentLoaded', () => {
+        const statusItems = document.querySelectorAll('.status-item');
+        statusItems.forEach((item, index) => {
+          item.style.animationDelay = `${index * 0.1}s`;
+        });
+      });
+    </script>
+  </body>
 </html>

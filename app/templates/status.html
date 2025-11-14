@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Installation Status - DevToolBox</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='style.css') }}">
+    <link rel="icon" href="{{ url_for('static', filename='favicon.svg') }}" type="image/svg+xml">
+</head>
+<body>
+    <div class="container">
+        <header class="header">
+            <h1>⚡ DevToolBox - Installation Status</h1>
+        </header>
+
+        <!-- Results Section -->
+        <div class="card">
+            <h2>📋 Results</h2>
+            {% if results %}
+                {% for tool, status in results.items() %}
+                <div style="margin: 12px 0; padding: 12px; background: #f5f5f5; border-radius: 6px;">
+                    <strong>{{ tool }}:</strong>
+                    <span style="color: {% if '✓' in status or 'success' in status.lower() %}#10b981{% elif 'error' in status.lower() or '✗' in status %}#ef4444{% else %}#f59e0b{% endif %};">
+                        {{ status }}
+                    </span>
+                </div>
+                {% endfor %}
+            {% endif %}
+        </div>
+
+        <!-- Logs Section -->
+        <div class="card">
+            <h2>📝 Logs</h2>
+            <pre style="background: #1f2937; color: #e5e7eb; padding: 16px; border-radius: 6px; overflow-x: auto; max-height: 400px;"><code>{% for log in logs %}{{ log }}
+{% endfor %}</code></pre>
+        </div>
+
+        <!-- AI Analysis (if available) -->
+        {% if gemini_analysis %}
+        <div class="card">
+            <h2>✨ AI Analysis</h2>
+            <div style="background: #f0fdf4; border-left: 4px solid #10b981; padding: 16px; border-radius: 6px;">
+                {{ gemini_analysis }}
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- Navigation -->
+        <div style="margin-top: 24px; display: flex; gap: 12px;">
+            <a href="{{ url_for('main.index') }}" class="primary" style="text-decoration: none; text-align: center; flex: 1; padding: 12px;">← Back to Home</a>
+        </div>
+    </div>
+</body>
+</html>
